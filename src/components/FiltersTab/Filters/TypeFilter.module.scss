@@ -1,0 +1,56 @@
+.typeDisplay {
+  button {
+    border: 1px solid grey;
+    width: 70px;
+    height: 25px;
+    border-radius: 5px;
+    background-color: rgba(0, 0, 0, 0.1);
+    color: rgb(177, 177, 177);
+    transition: 0.2s;
+
+    &:hover {
+      color: white;
+      border: 1px solid white;
+      background-color: rgba(0, 0, 0, 0.3);
+    }
+
+    &:active {
+      background-color: rgba(0, 0, 0, 0.7);
+    }
+  }
+}
+
+.undoTypesBtn {
+  margin-left: 20px;
+}
+
+.typeDropdown {
+  position: absolute;
+  display: flex;
+  flex-wrap: wrap;
+  width: 200px;
+  transform: translateX(calc(-50% + 35px));
+  background-color: rgb(61, 61, 61);
+  border: 1px solid rgb(0, 0, 0);
+  border-radius: 5px;
+  padding: 5px;
+  user-select: none;
+  z-index: 999;
+  box-shadow: 2px 4px 6px black;
+
+  label {
+    color: rgb(255, 255, 255);
+    margin-left: 5px;
+    text-transform: capitalize
+  }
+}
+
+.typeRow {
+  flex: 50%;
+}
+
+.selectBtns {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+}

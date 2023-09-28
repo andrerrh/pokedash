@@ -1,0 +1,43 @@
+.pokeNameContainer {
+  height: auto;
+  border: none;
+  border-bottom: 1px solid grey;
+  transition: 0.2s;
+
+  &:focus-within {
+    border-bottom: 1px solid white;
+
+    .searchBtn {
+      color: white;
+    }
+  }
+}
+.pokeNameInput {
+  background-color: transparent;
+  border: none;
+  color: white;
+  margin: 0;
+  padding: 0;
+
+  &::placeholder {
+    color: rgb(180, 180, 180);
+  }
+
+  &:focus {
+    outline: none;
+  }
+}
+
+.searchBtn {
+  border: none;
+  background-color: transparent;
+  color: grey;
+  transition: 0.2s;
+  margin: 0;
+
+  &:hover {
+    color: white;
+    filter: drop-shadow(0 0 2px white);
+    cursor: pointer;
+  }
+}
