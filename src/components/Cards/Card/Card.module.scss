@@ -8,6 +8,7 @@ $bgcolor: rgb(43, 42, 42);
   border-radius: 15px;
   padding-top: 10px;
   overflow: hidden;
+  transition: 0.2s;
   &:hover {
     box-shadow: 0 0 10px rgb(112, 255, 112);
     cursor: pointer;

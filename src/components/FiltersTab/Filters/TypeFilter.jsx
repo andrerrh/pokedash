@@ -1,4 +1,4 @@
-import { useState, useEffect , useRef} from "react"
+import { useState, useEffect, useRef } from "react"
 import Pokedex from "../../../dexconfig"
 
 import styles from "./TypeFilter.module.scss"
@@ -8,11 +8,19 @@ const TypeFilter = () => {
   const [isDropOpen, setIsDropOpen] = useState(false)
   const [availableTypes, setAvailableTypes] = useState([])
   const [checked, setChecked] = useState([{}])
+  const [dropBtnText, setDropBtnText] = useState("Show")
 
-  const dropMenu = useRef(null)
+  const dropMenuRef = useRef(null)
+  const dropBtnRef = useRef(null)
 
   const closeDrop = (e) => {
-    if (!dropMenu?.current?.contains(e.target)) setIsDropOpen(false)
+    if (
+      !dropMenuRef?.current?.contains(e.target) &&
+      !dropBtnRef?.current?.contains(e.target)
+    ) {
+      setDropBtnText("Show")
+      setIsDropOpen(false)
+    }
   }
 
   useEffect(() => {
@@ -36,9 +44,7 @@ const TypeFilter = () => {
   }, [])
 
   const handleTypeFilterDisplay = (e) => {
-    e.target.innerHTML === "Show"
-      ? (e.target.innerHTML = "Hide")
-      : (e.target.innerHTML = "Show")
+    dropBtnText === "Show" ? setDropBtnText("Hide") : setDropBtnText("Show")
     setIsDropOpen(!isDropOpen)
   }
 
@@ -69,9 +75,11 @@ const TypeFilter = () => {
     <>
       <p>Types</p>
       <div className={styles.typeDisplay}>
-        <button onClick={(e) => handleTypeFilterDisplay(e)}>Show</button>
+        <button onClick={handleTypeFilterDisplay} ref={dropBtnRef}>
+          {dropBtnText}
+        </button>
         {isDropOpen && (
-          <div className={styles.typeDropdown} ref={dropMenu}>
+          <div className={styles.typeDropdown} ref={dropMenuRef}>
             {availableTypes &&
               availableTypes.map((e) => {
                 return (

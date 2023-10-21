@@ -7,13 +7,21 @@ const GenFilter = () => {
   const [numOfGens, setNumOfGens] = useState([])
   const [isDropOpen, setIsDropOpen] = useState(false)
   const [checked, setChecked] = useState([{}])
+  const [btnText, setBtnText] = useState("Show")
 
-  const dropMenu = useRef(null)
+  const dropMenuRef = useRef(null)
+  const dropBtnRef = useRef(null)
 
   let gensInfo = [{}]
 
   const closeDrop = (e) => {
-    if (!dropMenu?.current?.contains(e.target)) setIsDropOpen(false)
+    if (
+      !dropMenuRef?.current?.contains(e.target) &&
+      !dropBtnRef?.current?.contains(e.target)
+    ) {
+      setBtnText("Show")
+      setIsDropOpen(false)
+    }
   }
 
   useEffect(() => {
@@ -39,9 +47,7 @@ const GenFilter = () => {
   }, [])
 
   const handleGenFilterDisplay = (e) => {
-    e.target.innerHTML === "Show"
-      ? (e.target.innerHTML = "Hide")
-      : (e.target.innerHTML = "Show")
+    btnText === "Show" ? setBtnText("Hide") : setBtnText("Show")
     setIsDropOpen(!isDropOpen)
   }
 
@@ -72,9 +78,11 @@ const GenFilter = () => {
     <>
       <p>Generation</p>
       <div className={styles.generationDisplay}>
-        <button onClick={handleGenFilterDisplay}>Show</button>
+        <button onClick={handleGenFilterDisplay} ref={dropBtnRef}>
+          {btnText}
+        </button>
         {isDropOpen && (
-          <div className={styles.generationDropdown} ref={dropMenu}>
+          <div className={styles.generationDropdown} ref={dropMenuRef}>
             {numOfGens &&
               numOfGens.map((e) => {
                 return (
