@@ -1,11 +1,11 @@
 import styles from './App.module.scss'
 
-import CardSection from './components/Cards/CardSection/CardSection'
+import CardsPage from './components/Cards/CardsPage/CardsPage'
 
 function App() {
   return (
     <div className={styles.app}>
-    <CardSection />
+    <CardsPage />
     </div>
   )
 }

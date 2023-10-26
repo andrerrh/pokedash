@@ -1,9 +1,11 @@
 import { useEffect, useState, useRef } from "react"
 import Pokedex from "../../../dexconfig"
-
+import { useDispatch } from "react-redux"
+import { changeGen } from "../../../redux/slices/genSlice"
 import styles from "./GenFilter.module.scss"
 
 const GenFilter = () => {
+  const dispatch = useDispatch()
   const [numOfGens, setNumOfGens] = useState([])
   const [isDropOpen, setIsDropOpen] = useState(false)
   const [checked, setChecked] = useState([{}])
@@ -11,8 +13,6 @@ const GenFilter = () => {
 
   const dropMenuRef = useRef(null)
   const dropBtnRef = useRef(null)
-
-  let gensInfo = [{}]
 
   const closeDrop = (e) => {
     if (
@@ -25,19 +25,22 @@ const GenFilter = () => {
   }
 
   useEffect(() => {
+    
     const fetchGens = async () => {
       const response = await Pokedex.getGenerationsList()
-      gensInfo = [...response.results]
       const genCount = Array.from(
         { length: response.count },
         (_, index) => index + 1
       )
       setNumOfGens(genCount)
+      //Set the default checkbox state on page load
       setChecked(
         genCount.reduce((acc, key) => {
-          return { ...acc, [`gen${key}`]: false }
+          return { ...acc, [`${key}`]: false }
         }, {})
       )
+      //Set the first gen to be the one showing on page load
+      setChecked(prev => ({...prev, 1: true}))
     }
     fetchGens()
 
@@ -45,6 +48,10 @@ const GenFilter = () => {
 
     return () => document.removeEventListener("mousdown", closeDrop)
   }, [])
+
+  useEffect(() => {
+    dispatch(changeGen(checked))
+  }, [checked])
 
   const handleGenFilterDisplay = (e) => {
     btnText === "Show" ? setBtnText("Hide") : setBtnText("Show")
@@ -61,7 +68,7 @@ const GenFilter = () => {
   const handleAllGensBtn = () => {
     setChecked(
       numOfGens.reduce((acc, key) => {
-        return { ...acc, [`gen${key}`]: true }
+        return { ...acc, [`${key}`]: true }
       }, {})
     )
   }
@@ -69,7 +76,7 @@ const GenFilter = () => {
   const handleUndoGensBtn = () => {
     setChecked(
       numOfGens.reduce((acc, key) => {
-        return { ...acc, [`gen${key}`]: false }
+        return { ...acc, [`${key}`]: false }
       }, {})
     )
   }
@@ -91,8 +98,8 @@ const GenFilter = () => {
                       type="checkbox"
                       id={`gen${e}`}
                       name="gens"
-                      value={`gen${e}`}
-                      checked={checked[`gen${e}`]}
+                      value={`${e}`}
+                      checked={checked[`${e}`]}
                       onChange={handleCheckClick}
                     />
                     <label htmlFor={`gen${e}`}>{`Gen ${e}`}</label>

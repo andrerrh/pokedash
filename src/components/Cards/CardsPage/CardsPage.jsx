@@ -1,16 +1,16 @@
 import { useState, useEffect, useRef } from "react"
 
-import styles from "./CardSection.module.scss"
+import styles from "./CardsPage.module.scss"
 import FiltersTab from "../../FiltersTab/FiltersTab"
 import CardsContainer from "../CardsContainer/CardsContainer"
 
-const CardSection = () => {
+const CardsPage = () => {
   return (
-    <div className={styles.cardSection}>
+    <div className={styles.CardsPage}>
       <FiltersTab />
       <CardsContainer />
     </div>
   )
 }
 
-export default CardSection
+export default CardsPage

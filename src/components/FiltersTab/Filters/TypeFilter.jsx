@@ -1,10 +1,12 @@
 import { useState, useEffect, useRef } from "react"
 import Pokedex from "../../../dexconfig"
+import { useDispatch } from "react-redux"
+import { changeType } from "../../../redux/slices/typeSlice"
 
 import styles from "./TypeFilter.module.scss"
 
 const TypeFilter = () => {
-  const [types, setTypes] = useState([])
+  const dispatch = useDispatch()
   const [isDropOpen, setIsDropOpen] = useState(false)
   const [availableTypes, setAvailableTypes] = useState([])
   const [checked, setChecked] = useState([{}])
@@ -26,13 +28,12 @@ const TypeFilter = () => {
   useEffect(() => {
     const fetchGens = async () => {
       const response = await Pokedex.getTypesList()
-      console.log(response)
       const typesInfo = [...response.results]
-      setTypes(typesInfo)
       setAvailableTypes(typesInfo.map((e) => e.name))
+      //Set the default checkbox state on page load
       setChecked(
         typesInfo.reduce((acc, key) => {
-          return { ...acc, [key.name]: false }
+          return { ...acc, [key.name]: true }
         }, {})
       )
     }
@@ -42,6 +43,10 @@ const TypeFilter = () => {
 
     return () => document.removeEventListener("mousdown", closeDrop)
   }, [])
+
+  useEffect(() => {
+    dispatch(changeType(checked))
+  }, [checked])
 
   const handleTypeFilterDisplay = (e) => {
     dropBtnText === "Show" ? setDropBtnText("Hide") : setDropBtnText("Show")

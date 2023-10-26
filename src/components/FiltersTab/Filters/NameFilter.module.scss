@@ -6,10 +6,6 @@
 
   &:focus-within {
     border-bottom: 1px solid white;
-
-    .searchBtn {
-      color: white;
-    }
   }
 }
 .pokeNameInput {
@@ -25,19 +21,5 @@
 
   &:focus {
     outline: none;
-  }
-}
-
-.searchBtn {
-  border: none;
-  background-color: transparent;
-  color: grey;
-  transition: 0.2s;
-  margin: 0;
-
-  &:hover {
-    color: white;
-    filter: drop-shadow(0 0 2px white);
-    cursor: pointer;
   }
 }
