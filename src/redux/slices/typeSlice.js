@@ -9,7 +9,7 @@ export const typeSlice = createSlice({
   initialState,
   reducers: {
     changeType: (state, action) => {
-        state.selected = action.payload
+      state.selected = action.payload
     },
   },
 })

@@ -9,7 +9,7 @@ const GenFilter = () => {
   const [numOfGens, setNumOfGens] = useState([])
   const [isDropOpen, setIsDropOpen] = useState(false)
   const [checked, setChecked] = useState([{}])
-  const [btnText, setBtnText] = useState("Show")
+  const [dropBtnText, setDropBtnText] = useState("Show")
 
   const dropMenuRef = useRef(null)
   const dropBtnRef = useRef(null)
@@ -19,13 +19,12 @@ const GenFilter = () => {
       !dropMenuRef?.current?.contains(e.target) &&
       !dropBtnRef?.current?.contains(e.target)
     ) {
-      setBtnText("Show")
+      setDropBtnText("Show")
       setIsDropOpen(false)
     }
   }
 
   useEffect(() => {
-    
     const fetchGens = async () => {
       const response = await Pokedex.getGenerationsList()
       const genCount = Array.from(
@@ -40,7 +39,7 @@ const GenFilter = () => {
         }, {})
       )
       //Set the first gen to be the one showing on page load
-      setChecked(prev => ({...prev, 1: true}))
+      setChecked((prev) => ({ ...prev, 1: true }))
     }
     fetchGens()
 
@@ -54,7 +53,7 @@ const GenFilter = () => {
   }, [checked])
 
   const handleGenFilterDisplay = (e) => {
-    btnText === "Show" ? setBtnText("Hide") : setBtnText("Show")
+    dropBtnText === "Show" ? setDropBtnText("Hide") : setDropBtnText("Show")
     setIsDropOpen(!isDropOpen)
   }
 
@@ -86,7 +85,7 @@ const GenFilter = () => {
       <p>Generation</p>
       <div className={styles.generationDisplay}>
         <button onClick={handleGenFilterDisplay} ref={dropBtnRef}>
-          {btnText}
+          {dropBtnText}
         </button>
         {isDropOpen && (
           <div className={styles.generationDropdown} ref={dropMenuRef}>

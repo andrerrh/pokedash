@@ -9,7 +9,7 @@ export const genSlice = createSlice({
   initialState,
   reducers: {
     changeGen: (state, action) => {
-        state.selected = action.payload
+      state.selected = action.payload
     },
   },
 })

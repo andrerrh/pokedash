@@ -2,26 +2,27 @@ import { useEffect, useState } from "react"
 import Pokedex from "../../../dexconfig"
 
 import styles from "./Card.module.scss"
-import getArtwork from "../../../api/getArtwork"
-import pokeExample from "../../../assets/imgs/cardImages/1.png"
+import { getArtwork } from "../../../api/getPokeInfo"
 
-const Card = ({ poke }) => {
+const Card = (props) => {
   const [currentPoke, setCurrentPoke] = useState({})
   const [pokeImg, setPokeImg] = useState("")
 
   useEffect(() => {
     const fetchPokemon = async () => {
-      const response = await Pokedex.getPokemon(poke.id)
-      setCurrentPoke(response)
-      setPokeImg(getArtwork(poke.id))
+      setCurrentPoke(props.poke)
+      setPokeImg(getArtwork(props.poke.id))
     }
     fetchPokemon()
-  }, [poke])
+  }, [props.poke])
 
   return (
-    <div className={styles.card}>
+    <>
       {currentPoke && (
-        <>
+        <div
+          className={styles.card}
+          style={{ "--pokeColor": currentPoke.typeColor }}
+        >
           <div className={styles.top}></div>
           <div className={styles.bottom}>
             <div className={styles.infoContainer}>
@@ -29,11 +30,11 @@ const Card = ({ poke }) => {
             </div>
           </div>
           <div className={styles.imageContainer}>
-            <img src={pokeImg} alt="bulba" />
+            <img src={pokeImg} alt={currentPoke.name} />
           </div>
-        </>
+        </div>
       )}
-    </div>
+    </>
   )
 }
 
