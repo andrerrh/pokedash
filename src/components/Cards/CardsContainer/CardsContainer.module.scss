@@ -1,4 +1,4 @@
-$btnColor: rgb(128,128,128);
+$btnColor: rgb(128, 128, 128);
 
 .cardsContainer {
   position: relative;
@@ -21,6 +21,17 @@ $btnColor: rgb(128,128,128);
   }
 }
 
+.loadingImg {
+  position: sticky;
+  left: 50%;
+  bottom: 0%;
+  // top: 10%;
+  translate: -50%;
+  display: inline-block;
+  width: 100px;
+  animation: rotate 1.5s infinite linear;
+}
+
 .loadMoreBtn {
   position: relative;
   width: 200px;
@@ -39,5 +50,11 @@ $btnColor: rgb(128,128,128);
     cursor: pointer;
     color: white;
     border-color: white;
+  }
+}
+
+@keyframes rotate {
+  100% {
+    transform: rotate(360deg);
   }
 }

@@ -4,16 +4,17 @@ import { useSelector } from "react-redux"
 
 import styles from "./CardsContainer.module.scss"
 import Card from "../Card/Card"
+import pokeballImg from "../../../assets/imgs/pokeball.svg"
 import { getPokeInfo } from "../../../api/getPokeInfo"
 
-let numberOfPokesToShow = 20
-let allPokesToRender = []  //Store all the pokes that are enabled to be rendered
-//in order to enable dynamic type filter selection
+const numberOfPokesPerPage = 20
+let numberOfPokesToShow = numberOfPokesPerPage
+let currentIndexOfSearch = 0
 
 const CardsContainer = () => {
   const [fetchedPokes, setFetchedPokes] = useState([])
-  useState(20)
   const [pokesToRender, setPokesToRender] = useState([])
+  const [isLoading, setIsLoading] = useState(true)
   const [displayMoreBtn, setDisplayMoreBtn] = useState(true)
   const selectedGens = useSelector((state) => state.gens.selected)
   const selectedTypes = useSelector((state) => state.type.selected)
@@ -42,31 +43,36 @@ const CardsContainer = () => {
     // setFetchedPokes(pokemonsFromFetchedGens.sort((a, b) => a.id - b.id))
   }
 
-  const fetchIndividualPokeInfos = async (pokes) => {
+  const fetchIndividualPokeInfos = async () => {
     const dataArray = []
-    let i = numberOfPokesToShow - 20
-    while (dataArray.length < 20 && pokes[i]) {
-      const data = await getPokeInfo(pokes[i].id)
+    while (
+      dataArray.length < numberOfPokesPerPage &&
+      fetchedPokes[currentIndexOfSearch]
+    ) {
+      const data = await getPokeInfo(fetchedPokes[currentIndexOfSearch].id)
       if (selectedTypes[data.type] === true) dataArray.push(data)
-      i++
+      currentIndexOfSearch++
     }
     return dataArray
   }
 
   const handlePokemonsToRender = async () => {
-    const fetchedPokesFiltered = await fetchIndividualPokeInfos(fetchedPokes)
+    const fetchedPokesFiltered = await fetchIndividualPokeInfos()
     setPokesToRender((prev) => prev.concat(fetchedPokesFiltered))
-    allPokesToRender = allPokesToRender.concat(fetchedPokesFiltered)
-    return fetchedPokesFiltered.length
+    setIsLoading(false)
+    fetchedPokesFiltered.length === numberOfPokesPerPage
+      ? setDisplayMoreBtn(true)
+      : setDisplayMoreBtn(false)
   }
 
-  const handleMoreLoad = async () => {
-    numberOfPokesToShow += 20
-    const numberToAdd = await handlePokemonsToRender()
-    numberToAdd === 20 ? setDisplayMoreBtn(true) : setDisplayMoreBtn(false)
+  const handleMoreLoad = () => {
+    setIsLoading(true)
+    handlePokemonsToRender()
   }
 
   useEffect(() => {
+    currentIndexOfSearch = 0
+    setPokesToRender([])
     const handleGensChange = async () => {
       selectedGensArray = Object.keys(selectedGens).filter(
         (key) => selectedGens[key]
@@ -74,6 +80,7 @@ const CardsContainer = () => {
       await fetchPokemons()
     }
     handleGensChange()
+    setIsLoading(true)
   }, [selectedGens])
 
   useEffect(() => {
@@ -82,17 +89,28 @@ const CardsContainer = () => {
   }, [fetchedPokes])
 
   useEffect(() => {
-    numberOfPokesToShow = 20
-    setPokesToRender(allPokesToRender.filter((e) => selectedTypes[e.type] === true))
-    setDisplayMoreBtn(true)
+    // setPokesToRender([])
+    currentIndexOfSearch = 0
+    handlePokemonsToRender()
+    setIsLoading(true)
+    // handlePokemonsToRender()
   }, [selectedTypes])
 
   return (
     <>
       <section className={styles.cardsContainer}>
         {pokesToRender &&
-          pokesToRender.map((poke, i) => <Card poke={poke} key={i} />)}
+          pokesToRender
+            .filter((e) => selectedTypes[e.type])
+            .map((poke, i) => <Card poke={poke} key={i} />)}
       </section>
+      {isLoading && (
+        <img
+          className={styles.loadingImg}
+          src={pokeballImg}
+          alt="pokeball"
+        ></img>
+      )}
       {displayMoreBtn && (
         <button onClick={handleMoreLoad} className={styles.loadMoreBtn}>
           Load more
