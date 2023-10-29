@@ -8,7 +8,7 @@ const GenFilter = () => {
   const dispatch = useDispatch()
   const [numOfGens, setNumOfGens] = useState([])
   const [isDropOpen, setIsDropOpen] = useState(false)
-  const [checked, setChecked] = useState([{}])
+  const [checked, setChecked] = useState({})
   const [dropBtnText, setDropBtnText] = useState("Show")
 
   const dropMenuRef = useRef(null)

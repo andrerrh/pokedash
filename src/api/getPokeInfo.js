@@ -17,4 +17,22 @@ const getPokeInfo = async (id) => {
   }
 }
 
-export { getArtwork, getPokeInfo }
+const fetchSelectedGens = async (selectedGensArray) => {
+  const response = await Pokedex.getGeneration(selectedGensArray)
+  //Reduces all the selected gens arrays into a single one with all the pokemon IDs and URL
+  const pokemonsFromFetchedGens = response.reduce((acc, gen) => {
+    return acc.concat(
+      gen.pokemon_species.map((poke) => {
+        const idMatch = poke.url.match(/\/(\d+)\/$/) //Extracts the Pokemon ID from the URL
+        const pokeId = parseInt(idMatch[1], 10)
+        return {
+          id: pokeId,
+          url: poke.url,
+        }
+      })
+    )
+  }, [])
+  return pokemonsFromFetchedGens
+}
+
+export { getArtwork, getPokeInfo, fetchSelectedGens }

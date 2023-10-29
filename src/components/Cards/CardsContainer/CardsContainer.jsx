@@ -5,105 +5,114 @@ import { useSelector } from "react-redux"
 import styles from "./CardsContainer.module.scss"
 import Card from "../Card/Card"
 import pokeballImg from "../../../assets/imgs/pokeball.svg"
-import { getPokeInfo } from "../../../api/getPokeInfo"
+import { getPokeInfo, fetchSelectedGens } from "../../../api/getPokeInfo"
 
-const numberOfPokesPerPage = 20
-let numberOfPokesToShow = numberOfPokesPerPage
-let currentIndexOfSearch = 0
+const pokesPerPage = 20
+let currentFetchIndex = 0
+let fetchedGens = []
+
+const resetFetchIndex = () => (currentFetchIndex = 0)
+const fetchQuery = []
 
 const CardsContainer = () => {
-  const [fetchedPokes, setFetchedPokes] = useState([])
+  // const [fetchedGens, setFetchedGens] = useState([])
   const [pokesToRender, setPokesToRender] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [displayMoreBtn, setDisplayMoreBtn] = useState(true)
   const selectedGens = useSelector((state) => state.gens.selected)
   const selectedTypes = useSelector((state) => state.type.selected)
+  const selectedName = useSelector((state) => state.name.selected)
 
-  let selectedGensArray = []
-
-  const fetchPokemons = async () => {
-    if (selectedGensArray[0] === "0") return
-    const response = await Pokedex.getGeneration(selectedGensArray)
-    //Reduces all the selected gens arrays into a single one with all the pokemon IDs and URL
-    const pokemonsFromFetchedGens = response.reduce((acc, gen) => {
-      return acc.concat(
-        gen.pokemon_species.map((poke) => {
-          const idMatch = poke.url.match(/\/(\d+)\/$/) //Extracts the Pokemon ID from the URL
-          const pokeId = parseInt(idMatch[1], 10)
-          return {
-            id: pokeId,
-            url: poke.url,
-            type: poke.type,
-          }
-        })
-      )
-    }, [])
-    console.log(pokemonsFromFetchedGens)
-    setFetchedPokes(pokemonsFromFetchedGens)
-    // setFetchedPokes(pokemonsFromFetchedGens.sort((a, b) => a.id - b.id))
+  const handleButtonDisplay = (numberOfPokesAdded) => {
+    if (numberOfPokesAdded === 20) setDisplayMoreBtn(true)
   }
 
-  const fetchIndividualPokeInfos = async () => {
+  const convertGensObjToArray = () => {
+    const gensArray = []
+    for (let key in selectedGens) {
+      if (selectedGens[key]) gensArray.push(key)
+    }
+    return gensArray
+  }
+
+  const fetchPokeInfo = async () => {
     const dataArray = []
     while (
-      dataArray.length < numberOfPokesPerPage &&
-      fetchedPokes[currentIndexOfSearch]
+      dataArray.length < pokesPerPage &&
+      fetchedGens[currentFetchIndex] !== undefined
     ) {
-      const data = await getPokeInfo(fetchedPokes[currentIndexOfSearch].id)
-      if (selectedTypes[data.type] === true) dataArray.push(data)
-      currentIndexOfSearch++
+      const data = await getPokeInfo(fetchedGens[currentFetchIndex].id)
+      if (selectedTypes[data.type]) dataArray.push(data)
+      currentFetchIndex++
     }
     return dataArray
   }
 
-  const handlePokemonsToRender = async () => {
-    const fetchedPokesFiltered = await fetchIndividualPokeInfos()
-    setPokesToRender((prev) => prev.concat(fetchedPokesFiltered))
-    setIsLoading(false)
-    fetchedPokesFiltered.length === numberOfPokesPerPage
-      ? setDisplayMoreBtn(true)
-      : setDisplayMoreBtn(false)
-  }
-
-  const handleMoreLoad = () => {
+  const handleMoreLoad = async () => {
     setIsLoading(true)
-    handlePokemonsToRender()
+    setDisplayMoreBtn(false)
+    try {
+      const pokesToAdd = await fetchPokeInfo()
+      setPokesToRender((prev) => prev.concat(pokesToAdd))
+      handleButtonDisplay(pokesToAdd.length)
+    } catch (error) {
+      console.error(`Error when fetching poke infos:${error}`)
+    }
+    setIsLoading(false)
   }
 
   useEffect(() => {
-    currentIndexOfSearch = 0
-    setPokesToRender([])
+    const abortController = new AbortController()
+
     const handleGensChange = async () => {
-      selectedGensArray = Object.keys(selectedGens).filter(
-        (key) => selectedGens[key]
-      )
-      await fetchPokemons()
+      setIsLoading(true)
+      resetFetchIndex()
+      const selectedGensArray = convertGensObjToArray()
+      fetchedGens = await fetchSelectedGens(selectedGensArray)
+      try {
+        const pokesToShow = await fetchPokeInfo(AbortController.signal)
+        handleButtonDisplay(pokesToShow.length)
+        setIsLoading(false)
+        setPokesToRender(pokesToShow)
+      } catch (error) {
+        console.error(`Error when fetching poke infos:${error}`)
+      }
     }
     handleGensChange()
-    setIsLoading(true)
+    return () => {
+      abortController.abort()
+    }
   }, [selectedGens])
 
   useEffect(() => {
-    setPokesToRender([])
-    handlePokemonsToRender()
-  }, [fetchedPokes])
+    const abortController = new AbortController()
 
-  useEffect(() => {
-    // setPokesToRender([])
-    currentIndexOfSearch = 0
-    handlePokemonsToRender()
-    setIsLoading(true)
-    // handlePokemonsToRender()
+    const handleTypeChange = async () => {
+      currentFetchIndex = 0
+      setIsLoading(true)
+      setDisplayMoreBtn(false)
+      try {
+        const pokesToShow = await fetchPokeInfo(AbortController.signal)
+        setPokesToRender(pokesToShow)
+        handleButtonDisplay(pokesToShow.length)
+      } catch (error) {
+        console.error(`Error when fetching poke infos:${error}`)
+      }
+      setIsLoading(false)
+    }
+    handleTypeChange()
+    return () => {
+      abortController.abort()
+    }
   }, [selectedTypes])
 
   return (
     <>
       <section className={styles.cardsContainer}>
         {pokesToRender &&
-          pokesToRender
-            .filter((e) => selectedTypes[e.type])
-            .map((poke, i) => <Card poke={poke} key={i} />)}
+          pokesToRender.map((poke, i) => <Card poke={poke} key={i} />)}
       </section>
+      {console.log(pokesToRender)}
       {isLoading && (
         <img
           className={styles.loadingImg}
@@ -121,3 +130,71 @@ const CardsContainer = () => {
 }
 
 export default CardsContainer
+
+//   // setFetchedPokes(pokemonsFromFetchedGens.sort((a, b) => a.id - b.id))
+// }
+
+// const fetchIndividualPokeInfos = async () => {
+//   const dataArray = []
+//   while (
+//     dataArray.length < numberOfPokesPerPage &&
+//     fetchedPokes[currentIndexOfSearch]
+//   ) {
+//     const data = await getPokeInfo(fetchedPokes[currentIndexOfSearch].id)
+//     if (selectedTypes[data.type] === true) dataArray.push(data)
+//     currentIndexOfSearch++
+//   }
+//   return dataArray
+// }
+
+// const handlePokemonsToRender = async () => {
+//   const fetchedPokesFiltered = await fetchIndividualPokeInfos()
+//   fetchedPokesFiltered.length === numberOfPokesPerPage
+//     ? setDisplayMoreBtn(true)
+//     : setDisplayMoreBtn(false)
+//   return fetchedPokesFiltered
+// }
+
+// const handleMoreLoad = () => {
+//   setDisplayMoreBtn(false)
+//   setIsLoading(true)
+//   handlePokemonsToRender()
+// }
+
+// useEffect(() => {
+//   currentIndexOfSearch = 0
+//   setPokesToRender((_) => [])
+//   const handleGensChange = async () => {
+//     selectedGensArray = Object.keys(selectedGens).filter(
+//       (key) => selectedGens[key]
+//     )
+//     await fetchPokemons()
+//   }
+//   setIsLoading(true)
+//   handleGensChange()
+//   return () => setPokesToRender((_) => [])
+// }, [selectedGens])
+
+// useEffect(() => {
+//   const handleFetchedChange = async () => {
+//     const pokesToAdd = await handlePokemonsToRender()
+//     setPokesToRender(pokesToAdd)
+//     setIsLoading(false)
+//     handlePokemonsToRender()
+//   }
+//   handleFetchedChange()
+//   return () => setPokesToRender((_) => [])
+// }, [fetchedPokes])
+
+// useEffect(() => {
+//   const handleTypeChange = async () => {
+//     setIsLoading(true)
+//     currentIndexOfSearch = 0
+//     setPokesToRender((_) => [])
+//     const pokesToAdd = await handlePokemonsToRender()
+//     setPokesToRender(pokesToAdd)
+//     setIsLoading(false)
+//   }
+//   handleTypeChange()
+//   return () => setPokesToRender((_) => [])
+// }, [selectedTypes])
