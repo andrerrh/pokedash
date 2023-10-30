@@ -24,7 +24,7 @@
     box-shadow: 0 0 30px $pokeColor;
     cursor: pointer;
     &::before {
-      background: rgba(0,0,0,0.8);
+      background: rgba(0, 0, 0, 0.8);
     }
     .imageContainer {
       overflow: visible;
@@ -34,6 +34,10 @@
       img {
         animation: moveIn 0.5s forwards;
       }
+    }
+    .pokeName,
+    .pokeType {
+      translate: 0% 50%;
     }
   }
   .top {
@@ -69,6 +73,17 @@
       color: $pokeColor;
       text-transform: capitalize;
       z-index: 10;
+      transition: 0.4s;
+    }
+    .pokeType {
+      position: relative;
+      text-transform: uppercase;
+      background-color: $pokeColor;
+      border-radius: 5px;
+      padding-inline: 5px;
+      font-weight: bold;
+      box-shadow: inset 0 0 5px white;
+      transition: 0.4s;
     }
   }
 

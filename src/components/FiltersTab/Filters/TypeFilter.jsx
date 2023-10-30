@@ -101,6 +101,7 @@ const TypeFilter = () => {
                   </div>
                 )
               })}
+            <p className={styles.typeWarning}>Primary types only</p>
             {availableTypes.length > 1 && (
               <div className={styles.selectBtns}>
                 <button

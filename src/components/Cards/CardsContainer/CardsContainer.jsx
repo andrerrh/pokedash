@@ -12,30 +12,33 @@ let currentFetchIndex = 0
 let fetchedGens = []
 
 const resetFetchIndex = () => (currentFetchIndex = 0)
-const fetchQuery = []
 
 const CardsContainer = () => {
   // const [fetchedGens, setFetchedGens] = useState([])
   const [pokesToRender, setPokesToRender] = useState([])
-  const [isLoading, setIsLoading] = useState(true)
+  const [isFetching, setIsFetching] = useState(false)
+  const [fetchQuery, setFetchQuery] = useState([])
   const [displayMoreBtn, setDisplayMoreBtn] = useState(true)
   const selectedGens = useSelector((state) => state.gens.selected)
   const selectedTypes = useSelector((state) => state.type.selected)
   const selectedName = useSelector((state) => state.name.selected)
 
   const handleButtonDisplay = (numberOfPokesAdded) => {
-    if (numberOfPokesAdded === 20) setDisplayMoreBtn(true)
+    numberOfPokesAdded === pokesPerPage
+      ? setDisplayMoreBtn(true)
+      : setDisplayMoreBtn(false)
   }
 
-  const convertGensObjToArray = () => {
-    const gensArray = []
-    for (let key in selectedGens) {
-      if (selectedGens[key]) gensArray.push(key)
+  const convertObjToArray = (selectedObj) => {
+    const array = []
+    for (let key in selectedObj) {
+      if (selectedObj[key]) array.push(key)
     }
-    return gensArray
+    return array
   }
 
   const fetchPokeInfo = async () => {
+    setIsFetching(true)
     const dataArray = []
     while (
       dataArray.length < pokesPerPage &&
@@ -45,75 +48,66 @@ const CardsContainer = () => {
       if (selectedTypes[data.type]) dataArray.push(data)
       currentFetchIndex++
     }
+
     return dataArray
   }
 
   const handleMoreLoad = async () => {
-    setIsLoading(true)
-    setDisplayMoreBtn(false)
-    try {
-      const pokesToAdd = await fetchPokeInfo()
-      setPokesToRender((prev) => prev.concat(pokesToAdd))
-      handleButtonDisplay(pokesToAdd.length)
-    } catch (error) {
-      console.error(`Error when fetching poke infos:${error}`)
-    }
-    setIsLoading(false)
+    setFetchQuery([...fetchQuery, "more"])
   }
 
   useEffect(() => {
-    const abortController = new AbortController()
-
     const handleGensChange = async () => {
-      setIsLoading(true)
-      resetFetchIndex()
-      const selectedGensArray = convertGensObjToArray()
+      const selectedGensArray = convertObjToArray(selectedGens)
       fetchedGens = await fetchSelectedGens(selectedGensArray)
-      try {
-        const pokesToShow = await fetchPokeInfo(AbortController.signal)
-        handleButtonDisplay(pokesToShow.length)
-        setIsLoading(false)
-        setPokesToRender(pokesToShow)
-      } catch (error) {
-        console.error(`Error when fetching poke infos:${error}`)
-      }
+      selectedGensArray.length >= 1
+        ? setFetchQuery([...fetchQuery, "new"])
+        : setFetchQuery([...fetchQuery, "empty"])
     }
     handleGensChange()
-    return () => {
-      abortController.abort()
-    }
   }, [selectedGens])
 
   useEffect(() => {
-    const abortController = new AbortController()
-
-    const handleTypeChange = async () => {
-      currentFetchIndex = 0
-      setIsLoading(true)
-      setDisplayMoreBtn(false)
-      try {
-        const pokesToShow = await fetchPokeInfo(AbortController.signal)
-        setPokesToRender(pokesToShow)
-        handleButtonDisplay(pokesToShow.length)
-      } catch (error) {
-        console.error(`Error when fetching poke infos:${error}`)
-      }
-      setIsLoading(false)
-    }
-    handleTypeChange()
-    return () => {
-      abortController.abort()
-    }
+    const selectedTypesArray = convertObjToArray(selectedTypes)
+    selectedTypesArray.length >= 1
+      ? setFetchQuery([...fetchQuery, "new"])
+      : setFetchQuery([...fetchQuery, "empty"])
   }, [selectedTypes])
+
+  useEffect(() => {
+    const handleQueryChange = async () => {
+      if (!isFetching && fetchQuery.length >= 1) {
+        const action = fetchQuery[0]
+        if (action === "empty") {
+          setPokesToRender((_) => [])
+          const shiftedArray = [...fetchQuery.slice(1)]
+          setFetchQuery(shiftedArray)
+          return
+        }
+        if (action === "new") resetFetchIndex()
+        const pokesToShow = await fetchPokeInfo()
+        action === "new"
+          ? setPokesToRender((_) => pokesToShow)
+          : setPokesToRender((prev) => prev.concat(pokesToShow))
+        handleButtonDisplay(pokesToShow.length)
+        const shiftedArray = [...fetchQuery.slice(1)]
+        setFetchQuery(shiftedArray)
+        setIsFetching(false)
+      }
+    }
+    handleQueryChange()
+  }, [fetchQuery, isFetching])
 
   return (
     <>
       <section className={styles.cardsContainer}>
         {pokesToRender &&
-          pokesToRender.map((poke, i) => <Card poke={poke} key={i} />)}
+        pokesToRender.filter((poke) => {
+          return poke.name.includes(selectedName)
+        })
+          .map((poke, i) => <Card poke={poke} key={i} />)}
       </section>
-      {console.log(pokesToRender)}
-      {isLoading && (
+      {isFetching && (
         <img
           className={styles.loadingImg}
           src={pokeballImg}

@@ -27,6 +27,7 @@ const Card = (props) => {
           <div className={styles.bottom}>
             <div className={styles.infoContainer}>
               <p className={styles.pokeName}>{currentPoke.name}</p>
+              <p className={styles.pokeType}>{currentPoke.type}</p>
             </div>
           </div>
           <div className={styles.imageContainer}>
